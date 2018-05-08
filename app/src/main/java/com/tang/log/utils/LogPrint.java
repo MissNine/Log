@@ -7,13 +7,18 @@ import android.os.Build;
 import android.util.Log;
 
 import com.tang.log.MyApplication;
+import com.tang.log.common.Constants;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.tang.log.common.Constants.YAKDATA_PATH;
+import static com.tang.log.utils.CacheUtil.getFileNameById;
 
 /**
  * Created by zhaoxuan.li on 2015/9/17.
@@ -200,6 +205,8 @@ public class LogPrint  {
         /*-----------------------------以下调用 具体上传服务器方法---------------------*/
         /*-----------------------------不同应用上传方式不用，此处不具体写---------------------*/
         Log.println(LogConfig.INFO, "Log上传到服务器", message.toString());
+        //上传服务器前先将日志加密
+//        AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName),YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
     }
     /**
      * 上传日志到服务器
@@ -217,5 +224,7 @@ public class LogPrint  {
         /*-----------------------------以下调用 具体上传服务器方法---------------------*/
         /*-----------------------------不同应用上传方式不用，此处不具体写---------------------*/
         Log.println(LogConfig.INFO,"Log上传到服务器",message.toString());
+        //上传服务器前先将日志加密
+//        AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName),YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
     }
 }
