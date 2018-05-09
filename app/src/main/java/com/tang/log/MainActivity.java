@@ -94,6 +94,14 @@ public class MainActivity extends Activity {
                     WLog.e("MainActivity", "这是一条错误信息错误", e);
                 }
                 mTxtLog.setText("日志已加密保存");
+                try {
+                    //解密数据库中的日志
+                    descryFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //生成加密文件
+                AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName), YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
             }
         });
         mBtnShowLog.setOnClickListener(new View.OnClickListener() {
@@ -105,7 +113,6 @@ public class MainActivity extends Activity {
         mBtnEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName), YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
                 try {
                     descryFile();
                 } catch (Exception e) {
@@ -130,6 +137,7 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
                 AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName), YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
+               ////TODO:这里将加密好的文件上传到服务器，上传成功后删除数据库中的日志信息
                 mTxtLog.setText("加密文件地址：手机目录/Log/EntryLog");
             }
         });
