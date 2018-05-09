@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
@@ -45,8 +46,8 @@ public class CacheUtil {
         String fileName = YAKDATA_PATH + File.separator + getFileNameById(Constants.originName);
         File file = new File(fileName);
         try {
-            if (!file.exists())
-                file.createNewFile();
+//            if (!file.exists())
+//                file.createNewFile();
 //            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName));
 //            oos.writeObject(getRecentSubList() + "\r\n" + log);
 //            oos.flush();
@@ -71,17 +72,9 @@ public class CacheUtil {
     public static String getRecentSubList() {
         String log = "";
         String fileName = YAKDATA_PATH + File.separator + getFileNameById(Constants.originName);
-//        try {
-//            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
-//            log = (String) ois.readObject();
-//            Log.e("-------TAG", log);
-//            ois.close();
-//        } catch (Exception e) {
-//            return log;
-//        }
         try {
             File file = new File(fileName);
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file),"GB2312"));
             String readline = "";
             StringBuffer sb = new StringBuffer();
             while ((readline = br.readLine()) != null) {

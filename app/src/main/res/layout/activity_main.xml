@@ -22,7 +22,15 @@
             android:id="@+id/btn_show_log"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="获取文件中的log" />
+            android:text="获取文件中的log"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btn_entry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="解密导出到本地"
+            android:visibility="visible"/>
 
     </LinearLayout>
 
@@ -32,22 +40,17 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_entry"
+            android:id="@+id/btn_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="加密"/>
+            android:text="上传"/>
 
         <Button
             android:id="@+id/btn_detry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="解密"/>
-
-        <Button
-            android:id="@+id/btn_upload"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="上传"/>
+            android:text="服务器端解密"
+            android:visibility="visible"/>
 
     </LinearLayout>
 

@@ -19,4 +19,6 @@ public class Constants {
     public static final String decryptName = "DecreyLog";
     //源文件名
     public static final String originName = "cachedataLog";
+    //上传地址
+    public static final String upLoadUrl = "";
 }

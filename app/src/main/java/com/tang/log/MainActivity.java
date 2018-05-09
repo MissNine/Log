@@ -10,16 +10,25 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.tang.log.common.Constants;
+import com.tang.log.db.DBHelper;
+import com.tang.log.model.LogBean;
 import com.tang.log.utils.AESFileUtil;
 import com.tang.log.utils.CacheUtil;
+import com.tang.log.utils.LogConfig;
+import com.tang.log.utils.LogPrint;
 import com.tang.log.utils.PermissionUtil;
 import com.tang.log.utils.WLog;
 
+import org.xutils.view.annotation.ContentView;
+import org.xutils.x;
+
 import java.io.File;
+import java.util.List;
 
 import static com.tang.log.common.Constants.YAKDATA_PATH;
 import static com.tang.log.utils.CacheUtil.getFileNameById;
 
+@ContentView(R.layout.activity_main)
 public class MainActivity extends Activity {
     private Button mBtnShowLog, mBtnStart, mBtnEntry, mBtnDetry, mBtnUpLoad;
     private TextView mTxtLog;
@@ -27,15 +36,15 @@ public class MainActivity extends Activity {
     private static final String[] PERMISSIONS = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
     private PermissionUtil mPermissionUtil;
     //是否需要检测权限
     public static boolean isRequireCheck = true;
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        x.view().inject(this);
         mPermissionUtil = new PermissionUtil(this, this);
         if (isRequireCheck) {
             if (mPermissionUtil.lacksPermissions(PERMISSIONS)) {
@@ -45,16 +54,28 @@ public class MainActivity extends Activity {
                 isRequireCheck = false;
             }
         }
-        initView();
+        try {
+            initView();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void initView() {
+    public void initView() throws Exception {
+        if (dbHelper == null) {
+            dbHelper = DBHelper.getInstance(1);
+        }
         mBtnStart = findViewById(R.id.btn_start);
         mBtnShowLog = findViewById(R.id.btn_show_log);
         mBtnEntry = findViewById(R.id.btn_entry);
         mBtnDetry = findViewById(R.id.btn_detry);
         mBtnUpLoad = findViewById(R.id.btn_upload);
         mTxtLog = findViewById(R.id.txt_log);
+
+        String entry = AESFileUtil.encrypt(Constants.AesKey, "123456789asdfgh哈哈哈");
+        String detry = AESFileUtil.decrypt(Constants.AesKey, entry);
+        Log.e("MainActivity", "123456789asdfgh哈哈哈   entry:" + entry + ",detry:" + detry);
+
         mBtnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,6 +93,7 @@ public class MainActivity extends Activity {
                     WLog.w("MainActivity", "除法运算异常", e, true);
                     WLog.e("MainActivity", "这是一条错误信息错误", e);
                 }
+                mTxtLog.setText("日志已加密保存");
             }
         });
         mBtnShowLog.setOnClickListener(new View.OnClickListener() {
@@ -83,23 +105,82 @@ public class MainActivity extends Activity {
         mBtnEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName),YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
+//                AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName), YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
+                try {
+                    descryFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mTxtLog.setText("解密导出到本地地址：手机目录/Log/cachedataLog");
             }
         });
         mBtnDetry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AESFileUtil.decryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName),YAKDATA_PATH + File.separator + getFileNameById(Constants.decryptName));
+                AESFileUtil.decryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName), YAKDATA_PATH + File.separator + getFileNameById(Constants.decryptName));
+                mTxtLog.setText("解密文件地址：手机目录/Log/DecreyLog");
             }
         });
         mBtnUpLoad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                try {
+                    descryFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                AESFileUtil.encryptFile(Constants.AesKey, YAKDATA_PATH + File.separator + getFileNameById(Constants.originName), YAKDATA_PATH + File.separator + getFileNameById(Constants.encryptName));
+                mTxtLog.setText("加密文件地址：手机目录/Log/EntryLog");
             }
         });
     }
 
+    /**
+     * 解密导出到本地
+     *
+     * @throws Exception
+     */
+    public void descryFile() throws Exception {
+        StringBuffer stringBuffer = new StringBuffer(getLogByType(LogConfig.ERROR)).append(getLogByType(LogConfig.DEBUG))
+                .append(getLogByType(LogConfig.INFO)).append(getLogByType(LogConfig.WARN)).append(getLogByType(LogConfig.VERBOSE));
+        CacheUtil.saveRecentSubList(stringBuffer.toString());
+    }
+
+    /**
+     * 根据级别获取日志信息
+     *
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String getLogByType(int type) throws Exception {
+        StringBuffer stringBuffer = new StringBuffer();
+        List<LogBean> logBeanList = dbHelper.queryDataByType(type);
+        String typeStr = "";
+        if (type == LogConfig.ERROR) {
+            typeStr = "ERROR";
+        } else if (type == LogConfig.DEBUG) {
+            typeStr = "DEBUG";
+        } else if (type == LogConfig.INFO) {
+            typeStr = "INFO";
+        } else if (type == LogConfig.WARN) {
+            typeStr = "WARN";
+        } else if (type == LogConfig.VERBOSE) {
+            typeStr = "VERBOSE";
+        } else {
+            typeStr = "OTHER";
+        }
+        if (logBeanList != null && logBeanList.size() > 0) {
+            int count = logBeanList.size();
+            stringBuffer.append("\n\nLog Type:" + typeStr + "\rCount:").append(count).append("\n\n");
+            for (LogBean logBean : logBeanList) {
+                //解密日志信息
+                String detryLog = AESFileUtil.decrypt(Constants.AesKey, logBean.getDescription());
+                stringBuffer.append(detryLog);
+            }
+        }
+        return stringBuffer.toString();
+    }
 
     private void testV() {
         long endTime = System.currentTimeMillis();
@@ -130,6 +211,7 @@ public class MainActivity extends Activity {
     }
 
     private void testE() {
+
 
         try {
             int a = 3;
