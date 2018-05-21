@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
         if (dbHelper == null) {
             dbHelper = DBHelper.getInstance(1);
         }
-        mBtnStart = findViewById(R.id.btn_start);
+        mBtnStart = (Button) findViewById(R.id.btn_start);
         mBtnShowLog = findViewById(R.id.btn_show_log);
         mBtnEntry = findViewById(R.id.btn_entry);
         mBtnDetry = findViewById(R.id.btn_detry);
